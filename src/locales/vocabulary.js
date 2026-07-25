@@ -183,6 +183,8 @@ export default {
   'tick.save_success': 'Tick was updated',
   'tick.date_label': 'Date',
   'tick.date_future_error': 'Climb date cannot be in the future.',
+  'tick.remember_defaults_label': 'Remember for next time',
+  'tick.remember_defaults_helper': 'New ticks will start with this date, style, and partners.',
   'tick.my_grade_label': 'My grade',
   'tick.note_label': 'Note for other climbers',
 
@@ -745,8 +747,14 @@ export default {
   'climbingareas.unknown_country': 'Unknown country',
   'climbingareas.sort_label': 'Sort by',
   'climbingareas.sort_photos': 'Routes drawn on photo',
+  'climbingareas.sort_routes': 'Number of routes',
   'climbingareas.sort_sectors': 'Number of sectors',
   'climbingareas.sort_alphabetical': 'Alphabetically',
+  'climbingareas.col_name': 'Name',
+  'climbingareas.col_routes': 'Routes',
+  'climbingareas.col_sectors': 'Sectors',
+  'climbingareas.filter_viewport': 'Only areas in the current map view',
+  'climbingareas.no_areas_in_viewport': 'No climbing areas in the current map view.',
 
   'hamburger_menu.climbing.title': 'Climbing',
   'climbing_grade_table.title': 'Climbing grades table',
