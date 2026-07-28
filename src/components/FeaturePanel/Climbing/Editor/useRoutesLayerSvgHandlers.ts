@@ -1,7 +1,9 @@
 import React, { useCallback } from 'react';
 import { useClimbingContext } from '../contexts/ClimbingContext';
+import { useRafThrottle } from './useRafThrottle';
 import { updateElementOnIndex } from '../utils/array';
 import { getPositionInImageFromMouse } from '../utils/mousePositionUtils';
+import { useBackgroundTap } from './useBackgroundTap';
 
 export const useRoutesLayerSvgHandlers = () => {
   const {
@@ -21,7 +23,6 @@ export const useRoutesLayerSvgHandlers = () => {
     pointSelectedIndex,
     isPointClicked,
     photoZoom,
-    isAddingPointBlockedRef,
     isZoomingRef,
     isEditMode,
     isPlacingProtectionPoints,
@@ -35,15 +36,14 @@ export const useRoutesLayerSvgHandlers = () => {
     updateProtectionPointPositionAtIndex,
   } = useClimbingContext();
 
-  const onClick = useCallback(
-    (event: React.MouseEvent) => {
+  const runTapAction = useCallback(
+    (event: React.PointerEvent) => {
       if (isZoomingRef.current) return;
 
       if (
         isEditMode &&
         isPlacingProtectionPoints &&
-        machine.currentStateName !== 'extendRoute' &&
-        !isAddingPointBlockedRef.current
+        machine.currentStateName !== 'extendRoute'
       ) {
         const positionInImage = getPositionInImageFromMouse(
           svgRef,
@@ -51,19 +51,14 @@ export const useRoutesLayerSvgHandlers = () => {
           photoZoom,
         );
         const coord = getPercentagePosition(positionInImage);
-        addProtectionPoint({
-          x: coord.x,
-          y: coord.y,
-          units: 'percentage',
-        });
+        addProtectionPoint({ x: coord.x, y: coord.y, units: 'percentage' });
         return;
       }
 
       if (
         isEditMode &&
         isPlacingProtectionPoints &&
-        machine.currentStateName === 'extendRoute' &&
-        !isAddingPointBlockedRef.current
+        machine.currentStateName === 'extendRoute'
       ) {
         machine.execute('finishRoute');
         const positionInImage = getPositionInImageFromMouse(
@@ -72,18 +67,11 @@ export const useRoutesLayerSvgHandlers = () => {
           photoZoom,
         );
         const coord = getPercentagePosition(positionInImage);
-        addProtectionPoint({
-          x: coord.x,
-          y: coord.y,
-          units: 'percentage',
-        });
+        addProtectionPoint({ x: coord.x, y: coord.y, units: 'percentage' });
         return;
       }
 
-      if (
-        machine.currentStateName === 'extendRoute' &&
-        !isAddingPointBlockedRef.current
-      ) {
+      if (machine.currentStateName === 'extendRoute') {
         machine.execute('addPointToEnd', event);
         return;
       }
@@ -98,13 +86,10 @@ export const useRoutesLayerSvgHandlers = () => {
         return;
       }
 
-      if (!isAddingPointBlockedRef.current) {
-        machine.execute('cancelRouteSelection');
-      }
+      machine.execute('cancelRouteSelection');
     },
     [
       addProtectionPoint,
-      isAddingPointBlockedRef,
       isEditMode,
       isPlacingProtectionPoints,
       machine,
@@ -115,15 +100,20 @@ export const useRoutesLayerSvgHandlers = () => {
     ],
   );
 
-  const onPointerMove = useCallback(
-    (event: React.MouseEvent) => {
+  const { onPointerDown, onPointerUp } = useBackgroundTap(svgRef, runTapAction);
+
+  // Pointer moves fire far more often than the screen refreshes; coalescing
+  // them to one update per animation frame keeps the preview line and point
+  // dragging smooth (one re-render per frame instead of one per event).
+  const processMove = useCallback(
+    (move: { clientX: number; clientY: number; altKey: boolean }) => {
       if (!isEditMode) {
         setMousePosition(null);
         return;
       }
       const positionInImage = getPositionInImageFromMouse(
         svgRef,
-        event,
+        move,
         photoZoom,
       );
 
@@ -138,7 +128,7 @@ export const useRoutesLayerSvgHandlers = () => {
         const newCoordinate = getPercentagePosition(positionInImage);
         const closestPoint = findCloserPoint(newCoordinate, {
           excludeProtectionIndex: protectionPointSelectedIndex,
-          disableSnap: event.altKey,
+          disableSnap: move.altKey,
         });
 
         const updatedPoint = closestPoint ?? newCoordinate;
@@ -157,7 +147,7 @@ export const useRoutesLayerSvgHandlers = () => {
 
         const newCoordinate = getPercentagePosition(positionInImage);
         const closestPoint = findCloserPoint(newCoordinate, {
-          disableSnap: event.altKey,
+          disableSnap: move.altKey,
         });
 
         const updatedPoint = closestPoint ?? newCoordinate;
@@ -197,7 +187,25 @@ export const useRoutesLayerSvgHandlers = () => {
     ],
   );
 
+  const { schedule: scheduleMove, cancel: cancelMove } =
+    useRafThrottle(processMove);
+
+  const onPointerMove = useCallback(
+    (event: React.MouseEvent) => {
+      scheduleMove({
+        clientX: event.clientX,
+        clientY: event.clientY,
+        altKey: event.altKey,
+      });
+    },
+    [scheduleMove],
+  );
+
   const handleOnMovingPointDropped = useCallback(() => {
+    // Drop any move still queued for the next frame so it can't re-apply a
+    // drag (with now-stale state) after the point has already been released.
+    cancelMove();
+
     if (isZoomingRef.current) {
       return;
     }
@@ -214,6 +222,7 @@ export const useRoutesLayerSvgHandlers = () => {
       setIsPanningDisabled(false);
     }
   }, [
+    cancelMove,
     isPointMoving,
     isProtectionPointMoving,
     isZoomingRef,
@@ -226,5 +235,10 @@ export const useRoutesLayerSvgHandlers = () => {
     setProtectionPointSelectedIndex,
   ]);
 
-  return { onClick, onPointerMove, handleOnMovingPointDropped };
+  return {
+    onPointerDown,
+    onPointerUp,
+    onPointerMove,
+    handleOnMovingPointDropped,
+  };
 };
