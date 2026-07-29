@@ -125,8 +125,17 @@ export const ClimbingRow = ({ option, inputValue }: Props) => {
   const theme = useTheme();
   const { userSettings } = useUserSettingsContext();
   const { isImperial } = userSettings;
-  const { name, type, lon, lat, parents, countryCode, gradeId, gradeTxt } =
-    option.climbing;
+  const {
+    name,
+    type,
+    lon,
+    lat,
+    parents,
+    countryCode,
+    gradeId,
+    gradeTxt,
+    routeCount,
+  } = option.climbing;
 
   const isRoute = type === 'route' || type === 'route_top';
   const gradeLabel = isRoute
@@ -161,6 +170,7 @@ export const ClimbingRow = ({ option, inputValue }: Props) => {
       <Grid size={{ xs: 12 }}>
         {highlightText(name, inputValue)}
         {gradeLabel && ` ${gradeLabel}`}
+        {routeCount ? ` · ${routeCount}` : null}
         {secondaryLine && (
           <Typography variant="body2" color="textSecondary" noWrap>
             {secondaryLine}
