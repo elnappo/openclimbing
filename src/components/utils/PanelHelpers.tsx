@@ -1,32 +1,26 @@
-import React, { LegacyRef, useRef } from 'react';
 import styled from '@emotion/styled';
-import { Scrollbars } from 'react-custom-scrollbars';
-import { useTheme } from '@mui/material';
-import { isDesktop, useMobileMode } from '../helpers';
-import { useScrollShadow } from '../FeaturePanel/Climbing/utils/useScrollShadow';
+import React, { Ref } from 'react';
+import { isDesktop } from '../helpers';
 import { SEARCH_BOX_HEIGHT } from '../SearchBox/consts';
 
-export const FEATURE_PANEL_WIDTH = 460;
+export const FEATURE_PANEL_WIDTH = 480;
 
-// custom scrollbar
-// better: https://github.com/rommguy/react-custom-scroll
-// maybe https://github.com/malte-wessel/react-custom-scrollbars (larger)
-const EffectiveHeight = styled.main`
-  height: calc(100% - ${SEARCH_BOX_HEIGHT}px);
+const PanelMain = styled.main`
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
 `;
 
-const SearchBoxBackground = styled.div`
-  height: ${SEARCH_BOX_HEIGHT}px;
-  background-color: ${({ theme }) => theme.palette.background.searchBox};
-  position: relative;
-  z-index: 1;
-`;
+const MARGIN = 0;
+
 const Container = styled.div`
   position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  background: ${({ theme }) => theme.palette.background.paper};
+  left: ${MARGIN}px;
+  bottom: ${MARGIN}px;
+  top: ${SEARCH_BOX_HEIGHT + MARGIN}px;
+  background: ${({ theme }) => theme.palette.background.default};
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
   color: ${({ theme }) => theme.palette.text.primary};
   overflow: hidden;
   z-index: 1100;
@@ -35,90 +29,43 @@ const Container = styled.div`
   @media ${isDesktop} {
     width: ${FEATURE_PANEL_WIDTH}px;
   }
-
-  & > div > div {
-    // disable pulling panel around on mobile
-    // second div due to implementation of react-custom-scrollbars
-    overscroll-behavior: none;
-    overscroll-behavior-y: auto;
-  }
 `;
 
 export const PanelWrapper = ({ children }) => (
   <Container>
-    <SearchBoxBackground />
-    <EffectiveHeight>{children}</EffectiveHeight>
+    <PanelMain>{children}</PanelMain>
   </Container>
 );
 
 type PanelScrollbarsProps = {
   children: React.ReactNode;
-  scrollRef?: LegacyRef<Scrollbars>;
+  scrollRef?: Ref<HTMLDivElement>;
 };
 
-const MobileScrollbars = styled.div`
+const ScrollArea = styled.div`
+  // flex when inside PanelContent; height when a direct PanelMain child
+  flex: 1;
+  min-height: 0;
   height: 100%;
   overflow: auto;
+  overscroll-behavior: contain;
 `;
 
 export const PanelScrollbars = ({
   children,
   scrollRef,
-}: PanelScrollbarsProps) => {
-  const isMobileMode = useMobileMode();
-  const newRef = useRef<Scrollbars>(null);
-  const ref = scrollRef || newRef;
-  const theme = useTheme();
+}: PanelScrollbarsProps) => <ScrollArea ref={scrollRef}>{children}</ScrollArea>;
 
-  // @TODO refresh on panel height first update
-
-  const {
-    scrollElementRef,
-    onScroll,
-    ShadowContainer,
-    ShadowTop,
-    ShadowBottom,
-  } = useScrollShadow(undefined, ref);
-
-  return (
-    <ShadowContainer>
-      <ShadowTop backgroundColor={theme.palette.background.paper} />
-      {isMobileMode ? (
-        <MobileScrollbars onScroll={onScroll} ref={scrollElementRef}>
-          {children}
-        </MobileScrollbars>
-      ) : (
-        <>
-          <noscript
-            // react-custom-scrollbars renders the view with overflow:hidden until
-            // its componentDidMount switches it to scroll – without JS the panel
-            // would never become scrollable, so re-enable native scrolling here
-            dangerouslySetInnerHTML={{
-              __html: `<style>.panel-ssr-scroll > :first-child { overflow: auto !important; }</style>`,
-            }}
-          />
-          <Scrollbars
-            universal
-            autoHide
-            className="panel-ssr-scroll"
-            style={{ height: '100%' }}
-            onScroll={onScroll}
-            ref={scrollElementRef}
-          >
-            {children}
-          </Scrollbars>
-        </>
-      )}
-
-      <ShadowBottom backgroundColor={theme.palette.background.paper} />
-    </ShadowContainer>
-  );
-};
-
-export const PanelContent = styled.main`
+export const PanelContent = styled.main<{ $grow?: boolean }>`
   display: flex;
   flex-direction: column;
-  height: 100%;
+  ${({ $grow }) =>
+    $grow
+      ? // mobile feature sheet: grow with content so the drawer scroller + sticky work
+        `min-height: 100%;`
+      : // default: fill the panel so PanelScrollbars gets a bounded height
+        `height: 100%;
+         min-height: 0;`}
 `;
 
 export const PanelFooterWrapper = styled.footer`

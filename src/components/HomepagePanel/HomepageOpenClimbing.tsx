@@ -6,15 +6,26 @@ import MenuBookIcon from '@mui/icons-material/MenuBook';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import { Box, Button, Stack, Typography } from '@mui/material';
 import Link from 'next/link';
-import React, { ReactNode } from 'react';
+import React from 'react';
 import GithubIcon from '../../assets/GithubIcon';
 import { LogoMaptiler } from '../../assets/LogoMaptiler';
-import { LogoOpenClimbing } from '../../assets/LogoOpenClimbing';
 import { intl, t } from '../../services/intl';
-import { useMobileMode } from '../helpers';
+import { isMobileMode, useMobileMode } from '../helpers';
 import { useAddNewCragContext } from '../Map/HamburgerMenu/AddNewCrag/AddNewCragContext';
 import { ClosePanelButton } from '../utils/ClosePanelButton';
-import { PanelContent, PanelScrollbars } from '../utils/PanelHelpers';
+import { DRAWER_MOTION } from '../utils/drawerSnap';
+import { useMapChrome } from '../utils/mapChromeRegistry';
+import {
+  ClimbingNumbers,
+  GradientHeading,
+  SectionHeading,
+  useClimbingStats,
+} from '../utils/panelUi';
+import {
+  PANEL_GAP,
+  PanelContent,
+  PanelScrollbars,
+} from '../utils/PanelHelpers';
 import { DividerOpenClimbing } from './DividerOpenClimbing';
 import { HomepageOpenClimbingGallery } from './HomepageOpenClimbingGallery';
 import { LinkCard, LinkRow } from './LinkCard';
@@ -31,80 +42,76 @@ const Content = styled.div`
   padding: 20px 2em 0 2em;
 `;
 
-const SectionHeading = ({ children }: { children: ReactNode }) => (
+/** CSS media hide/show – avoids useMediaQuery SSR flashes. */
+const MobileOnly = styled.div`
+  display: none;
+  @media ${isMobileMode} {
+    display: block;
+  }
+`;
+
+const DesktopOnly = styled.div`
+  @media ${isMobileMode} {
+    display: none;
+  }
+`;
+
+const Brand = styled(GradientHeading, {
+  shouldForwardProp: (prop) => prop !== '$peek',
+})<{ $peek?: boolean }>`
+  text-align: center;
+  font-size: ${({ $peek }) => ($peek ? '32px' : '46px')};
+  line-height: ${({ $peek }) => ($peek ? 1.15 : 1.2)};
+  transition:
+    font-size ${DRAWER_MOTION},
+    transform ${DRAWER_MOTION};
+  transform: translateY(${({ $peek }) => ($peek ? '0' : '10px')});
+`;
+
+/** Peek: compact + centered in the strip. Expanded: larger, slightly lower. */
+const BrandBar = styled.div<{ $peek: boolean }>`
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  // equal side padding so the title stays optically centered next to close
+  padding: ${({ $peek }) => ($peek ? '0 48px 2px' : `${PANEL_GAP} 48px 8px`)};
+  background: ${({ theme }) => theme.palette.background.paper};
+  transition: padding ${DRAWER_MOTION};
+`;
+
+const Subtitle = () => (
   <Typography
-    variant="overline"
-    component="h2"
-    color="text.secondary"
-    sx={{ display: 'block', mb: 1, fontWeight: 700, letterSpacing: 1.5 }}
+    component="p"
+    variant="subtitle2"
+    color="secondary"
+    textTransform="lowercase"
   >
-    {children}
+    {t('project.openclimbing.description')}
   </Typography>
 );
 
-const Header = () => {
-  const isMobileMode = useMobileMode();
-
-  const iconWidth = isMobileMode ? 44 : 64;
-  return (
-    <Stack
-      direction={isMobileMode ? 'row' : 'column'}
-      alignItems="center"
-      spacing={isMobileMode ? 2 : 2.5}
-      sx={{
-        mt: isMobileMode ? 1 : 4,
-        mb: 2,
-      }}
-    >
-      <LogoOpenClimbing width={iconWidth} style={{ minWidth: iconWidth }} />
-      <Stack
-        component="section"
-        alignItems={isMobileMode ? 'flex-start' : 'center'}
-      >
-        <Typography
-          component="h1"
-          variant="h2"
-          color="inherit"
-          fontWeight={600}
-          lineHeight={1.1}
-        >
-          OpenClimbing
-        </Typography>
-        <Typography
-          component="p"
-          variant="subtitle2"
-          color="secondary"
-          textTransform="lowercase"
-        >
-          {t('project.openclimbing.description')}
-        </Typography>
-      </Stack>
-    </Stack>
-  );
-};
-
-const Description = () => {
-  const isMobileMode = useMobileMode();
-
-  return (
-    <Typography
-      variant="body2"
-      component="p"
-      color="text.secondary"
-      sx={{
-        maxWidth: 380,
-        mx: 'auto',
-        lineHeight: 1.6,
-        textAlign: isMobileMode ? 'left' : 'center',
-      }}
-    >
-      {t('homepage.openclimbing_description_p1')}{' '}
-      <Box component="strong" color="text.primary">
-        {t('homepage.openclimbing_description_p2')}
-      </Box>
-    </Typography>
-  );
-};
+const Description = () => (
+  <Typography
+    variant="body2"
+    component="p"
+    color="text.secondary"
+    sx={{
+      maxWidth: 380,
+      mx: 'auto',
+      mb: 3,
+      lineHeight: 1.6,
+      textAlign: 'center',
+    }}
+  >
+    {t('homepage.openclimbing_description_p1')}{' '}
+    <Box component="strong" color="text.primary">
+      {t('homepage.openclimbing_description_p2')}
+    </Box>
+  </Typography>
+);
 
 const AboutOpenStreetMap = () => (
   <Typography variant="body2">
@@ -126,7 +133,6 @@ const STORY_URL = (lang) =>
     : 'https://medium.com/@jvaclavik/story-behind-openclimbing-org-ab448939c6ac';
 
 const Buttons = ({ onClose }) => {
-  const isMobileMode = useMobileMode();
   const { start } = useAddNewCragContext();
 
   const addNewCrag = () => {
@@ -135,8 +141,8 @@ const Buttons = ({ onClose }) => {
   };
 
   return (
-    <Stack spacing={1} mt={3}>
-      {isMobileMode && (
+    <Stack spacing={1} mt={4}>
+      <MobileOnly>
         <Button
           variant="contained"
           color="primary"
@@ -147,7 +153,7 @@ const Buttons = ({ onClose }) => {
         >
           {t('homepage.go_to_map_button')}
         </Button>
-      )}
+      </MobileOnly>
       <Button
         variant="outlined"
         color="primary"
@@ -191,6 +197,10 @@ const StyledGithubIcon = styled(GithubIcon)`
 
 const FooterLink = styled.a`
   display: flex;
+  align-items: center;
+`;
+
+const GithubLink = styled(FooterLink)`
   opacity: 0.65;
 
   &:hover {
@@ -200,19 +210,20 @@ const FooterLink = styled.a`
 
 const Gallery = () => (
   <Box mt={4}>
-    <SectionHeading>{t('homepage.gallery.title')}</SectionHeading>
+    <SectionHeading centered>{t('homepage.gallery.title')}</SectionHeading>
     <HomepageOpenClimbingGallery />
-    <Button
-      component={Link}
-      href="/climbing-areas"
-      locale={intl.lang}
-      variant="text"
-      fullWidth
-      endIcon={<ArrowForwardIcon />}
-      sx={{ mt: 1 }}
-    >
-      {t('homepage.discover_more')}
-    </Button>
+    <Stack alignItems="center" mt={1}>
+      <Button
+        component={Link}
+        href="/climbing-areas"
+        locale={intl.lang}
+        variant="text"
+        size="small"
+        endIcon={<ArrowForwardIcon />}
+      >
+        {t('homepage.discover_more')}
+      </Button>
+    </Stack>
   </Box>
 );
 
@@ -240,22 +251,22 @@ const Footer = () => (
     pb={2}
   >
     <Stack direction="row" alignItems="center" spacing={2}>
-      <a
+      <FooterLink
         href="https://www.maptiler.com"
         target="_blank"
         aria-label="MapTiler"
         title="MapTiler"
       >
         <LogoMaptiler width={120} />
-      </a>
-      <FooterLink
+      </FooterLink>
+      <GithubLink
         href="https://github.com/jvaclavik/openclimbing"
         target="_blank"
         aria-label={t('map.github_title')}
         title={t('map.github_title')}
       >
         <StyledGithubIcon width="22" />
-      </FooterLink>
+      </GithubLink>
     </Stack>
     <Typography variant="caption" color="secondary" letterSpacing={1}>
       Made in Prague with ♥
@@ -264,28 +275,51 @@ const Footer = () => (
 );
 
 export function HomepageOpenClimbing({ onClose }: { onClose: () => void }) {
-  return (
-    <PanelContent>
-      <PanelScrollbars>
-        <ClosePanelButton right onClick={onClose} />
-        <Content>
-          <Stack height="100%">
-            <Stack flex={1} justifyContent="center">
-              <Header />
-              <Description />
-              <Buttons onClose={onClose} />
-              <Gallery />
+  const stats = useClimbingStats();
+  const isMobileMode = useMobileMode();
+  // homepage drawer defaults to full – treat unknown (SSR / before mount) as expanded
+  const { drawerSnap } = useMapChrome();
+  const isPeek = drawerSnap === 'quarter';
+
+  const body = (
+    <>
+      <MobileOnly>
+        <BrandBar $peek={isPeek}>
+          <Brand $peek={isPeek}>OpenClimbing</Brand>
+        </BrandBar>
+      </MobileOnly>
+      <ClosePanelButton right onClick={onClose} style={{ zIndex: 6 }} />
+      <Content>
+        <Stack height="100%">
+          <Stack flex={1} justifyContent="center">
+            <Stack component="section" alignItems="center" mt={2} mb={2}>
+              <DesktopOnly>
+                <Brand>OpenClimbing</Brand>
+              </DesktopOnly>
+              <Subtitle />
             </Stack>
-
-            <Divider>
-              <DividerOpenClimbing width="100%" />
-            </Divider>
-
-            <ImportantLinks />
-            <Footer />
+            <Description />
+            <Gallery />
+            <Box mt={3}>
+              <ClimbingNumbers stats={stats} />
+            </Box>
+            <Buttons onClose={onClose} />
           </Stack>
-        </Content>
-      </PanelScrollbars>
+
+          <Divider>
+            <DividerOpenClimbing width="100%" />
+          </Divider>
+
+          <ImportantLinks />
+          <Footer />
+        </Stack>
+      </Content>
+    </>
+  );
+
+  return (
+    <PanelContent $grow={isMobileMode}>
+      {isMobileMode ? body : <PanelScrollbars>{body}</PanelScrollbars>}
     </PanelContent>
   );
 }

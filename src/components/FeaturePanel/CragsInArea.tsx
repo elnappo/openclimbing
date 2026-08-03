@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import { Box, Chip, Paper, Stack, Typography } from '@mui/material';
+import { Box, Chip, Stack, Typography } from '@mui/material';
 import Router from 'next/router';
 import React from 'react';
 import { getHumanPoiType, getLabel } from '../../helpers/featureLabel';
@@ -12,7 +12,7 @@ import {
 } from '../../services/helpers';
 import { addFeatureCenterToCache } from '../../services/osm/featureCenterToCache';
 import { Feature, isInstant } from '../../services/types';
-import { ClientOnly, isMobileMode, useMobileMode } from '../helpers';
+import { ClientOnly, useMobileMode } from '../helpers';
 import { useFeatureContext } from '../utils/FeatureContext';
 
 import Link from 'next/link';
@@ -37,17 +37,6 @@ import { Image } from './FeatureImages/Image/Image';
 import { MemberItem } from './MemberFeatures/MemberItem';
 
 const isOpenClimbing = PROJECT_ID === 'openclimbing';
-
-const StyledPaper = styled(Paper)`
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  opacity: 0.9;
-
-  @media ${isMobileMode} {
-    position: sticky;
-  }
-`;
 
 const Ul = styled.ul`
   padding: 0;
@@ -521,17 +510,15 @@ const AllCragsDistribution = ({ crags }: { crags: Feature[] }) => {
 };
 
 const FilterRow: React.FC = ({ children }) => (
-  <StyledPaper elevation={0} square>
-    <Stack
-      direction="row"
-      spacing={0.5}
-      justifyContent="flex-end"
-      m={1}
-      alignItems="center"
-    >
-      {children}
-    </Stack>
-  </StyledPaper>
+  <Stack
+    direction="row"
+    spacing={0.5}
+    justifyContent="flex-end"
+    m={1}
+    alignItems="center"
+  >
+    {children}
+  </Stack>
 );
 
 const useGetMemberAreas = () => {

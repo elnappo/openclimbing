@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import React, { useEffect } from 'react';
 import { AutocompleteRenderInputParams } from '@mui/material/Autocomplete/Autocomplete';
-import { useFocusOnSlash } from '../../helpers/hooks';
+import { useFocusOnCmdK, useFocusOnSlash } from '../../helpers/hooks';
 import { InputBase } from '@mui/material';
 import { t } from '../../services/intl';
 import { Setter } from '../../types';
@@ -10,15 +10,18 @@ type SearchBoxInputProps = {
   params: AutocompleteRenderInputParams;
   setInputValue: Setter<string>;
   autocompleteRef: React.MutableRefObject<undefined>;
+  autoFocus?: boolean;
 };
 
 const SearchBoxInput = ({
   params,
   setInputValue,
   autocompleteRef,
+  autoFocus,
 }: SearchBoxInputProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   useFocusOnSlash(inputRef);
+  useFocusOnCmdK(inputRef);
 
   const { InputLabelProps, InputProps, ...restParams } = params;
 
@@ -32,6 +35,7 @@ const SearchBoxInput = ({
       {...restParams} // eslint-disable-line react/jsx-props-no-spreading
       sx={{ height: '47px' }}
       inputRef={inputRef}
+      autoFocus={autoFocus}
       placeholder={t('searchbox.placeholder')}
       onChange={({ target }) => setInputValue(target.value)}
       onFocus={({ target }) => target.select()}
@@ -42,12 +46,14 @@ const SearchBoxInput = ({
 export const renderInputFactory = (
   setInputValue: Setter<string>,
   autocompleteRef: React.MutableRefObject<undefined>,
+  autoFocus?: boolean,
 ) => {
   const renderInputFn = (params: AutocompleteRenderInputParams) => (
     <SearchBoxInput
       params={params}
       setInputValue={setInputValue}
       autocompleteRef={autocompleteRef}
+      autoFocus={autoFocus}
     />
   );
   return renderInputFn;

@@ -2,10 +2,30 @@ import { useMediaQuery } from '@mui/material';
 import { grey, red } from '@mui/material/colors';
 import { createTheme, ThemeOptions, ThemeProvider } from '@mui/material/styles';
 import Cookies from 'js-cookie';
-import { createContext, useContext, useMemo, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { Setter } from '../types';
 
 const sharedThemeOptions: ThemeOptions = {
+  components: {
+    MuiButton: {
+      defaultProps: {
+        disableElevation: true,
+      },
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+          fontWeight: 900,
+        },
+      },
+    },
+  },
   shape: {
     borderRadius: '12px',
   },
@@ -30,6 +50,11 @@ const sharedThemeOptions: ThemeOptions = {
       fontWeight: 700,
       fontSize: 32,
     },
+    h4: {
+      fontFamily: `"Piazzolla", "Helvetica", "Arial", sans-serif`,
+      fontWeight: 900,
+      fontSize: 20,
+    },
   },
 };
 
@@ -38,7 +63,7 @@ const lightTheme = createTheme({
   palette: {
     divider: 'rgba(0, 0, 0, 0.04)',
     primary: {
-      main: '#556cd6',
+      main: '#ae2f0c',
     },
     secondary: {
       main: '#737373',
@@ -81,10 +106,10 @@ const darkTheme = createTheme({
     mode: 'dark',
     divider: 'rgba(255, 255, 255, 0.04)',
     primary: {
-      main: '#ffb74d',
+      main: '#f37553',
     },
     secondary: {
-      main: '#737373',
+      main: '#ffffff96',
     },
     tertiary: {
       main: '#00b6ff', // links
@@ -94,14 +119,14 @@ const darkTheme = createTheme({
     },
 
     background: {
-      default: '#303030',
-      elevation: '#333333',
-      paper: '#424242',
+      default: '#1a1a1a',
+      elevation: '#2e2e2e',
+      paper: '#242424',
       hover: grey['700'],
       searchBox: '#963838',
       searchInput: 'rgba(0,0,0,0.5)',
-      searchInputSolid: 'rgb(35, 26, 26)',
-      searchInputPanel: 'rgba(0,0,0,0.7)',
+      searchInputSolid: 'rgb(42, 34, 34)',
+      searchInputPanel: 'rgba(0,0,0,0.55)',
     },
     invertFilter: 'invert(1)',
     climbing: {
@@ -144,6 +169,28 @@ const useGetCurrentTheme = (userTheme: UserTheme) => {
   }, [userTheme, prefersDarkMode]);
 };
 
+// Alt+T flips between light and dark, never back to 'system'
+const useToggleThemeShortcut = (
+  currentTheme: Theme,
+  setUserTheme: (choice: UserTheme) => void,
+) => {
+  useEffect(() => {
+    const onKeydown = (e: KeyboardEvent) => {
+      // `key` is unusable here - Option+T types '†' on macOS
+      if (e.code !== 'KeyT' || !e.altKey || e.ctrlKey || e.metaKey) {
+        return;
+      }
+      e.preventDefault();
+      setUserTheme(currentTheme === 'dark' ? 'light' : 'dark');
+    };
+
+    window.addEventListener('keydown', onKeydown);
+    return () => {
+      window.removeEventListener('keydown', onKeydown);
+    };
+  }, [currentTheme, setUserTheme]);
+};
+
 export const UserThemeProvider = ({ children, userThemeCookie }) => {
   const [userTheme, setUserThemeState] = useState<UserTheme>(
     userThemeCookie ?? 'system',
@@ -151,10 +198,12 @@ export const UserThemeProvider = ({ children, userThemeCookie }) => {
   const currentTheme = useGetCurrentTheme(userTheme);
   const theme = currentTheme === 'dark' ? darkTheme : lightTheme;
 
-  const setUserTheme = (choice: UserTheme) => {
+  const setUserTheme = useCallback((choice: UserTheme) => {
     setUserThemeState(choice);
     Cookies.set('userTheme', choice, { expires: 30 * 12 * 10, path: '/' });
-  };
+  }, []);
+
+  useToggleThemeShortcut(currentTheme, setUserTheme);
 
   const value: UserThemeContextType = {
     userTheme,
