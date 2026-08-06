@@ -1,8 +1,49 @@
-import { LayerSpecification } from '@maplibre/maplibre-gl-style-spec';
+import {
+  ExpressionSpecification,
+  LayerSpecification,
+} from '@maplibre/maplibre-gl-style-spec';
 import { CLIMBING_TILES_SOURCE } from '../consts';
 import { linear } from './helpers';
 
+// route on the clicked photo
+const ifHighlighted = (
+  highlighted: number,
+  basic: number,
+): ExpressionSpecification => [
+  'case',
+  ['boolean', ['feature-state', 'highlighted'], false],
+  highlighted,
+  basic,
+];
+
+export const CRAG_ROUTES_LAYER = 'climbing route (crag highlight)';
+
+// circle-blur fades the disc from its edge inwards, so the ring has to start
+// wider to keep a visible thickness
+const HALO = 1.6;
+
 export const routesPoints: LayerSpecification[] = [
+  {
+    // an orange disc peeking from under the white ring - maplibre has no second
+    // stroke on a circle, so the ring has to be a layer of its own
+    id: CRAG_ROUTES_LAYER,
+    type: 'circle',
+    source: CLIMBING_TILES_SOURCE,
+    minzoom: 13,
+    filter: ['==', ['get', 'parentId'], -1], // set by setSelectedCragRoutes()
+    paint: {
+      'circle-color': '#f60',
+      'circle-opacity': 0.85,
+      'circle-blur': 1,
+      // route radius + its white stroke + the ring itself
+      'circle-radius': linear(
+        16,
+        ifHighlighted((2 + 2 + 1.5) * HALO, (1 + 0.4 + 1.5) * HALO),
+        21,
+        ifHighlighted((8 + 5 + 3) * HALO, (6 + 1.2 + 3) * HALO),
+      ),
+    },
+  },
   {
     id: 'climbing route (circle)',
     metadata: { clickableWithOsmId: true },
@@ -22,21 +63,16 @@ export const routesPoints: LayerSpecification[] = [
         ['coalesce', ['get', 'color'], '#999'],
       ],
       // highlighted (route on the clicked photo) grows its coloured centre a bit
-      'circle-radius': linear(
-        16,
-        ['case', ['boolean', ['feature-state', 'highlighted'], false], 2, 1],
-        21,
-        ['case', ['boolean', ['feature-state', 'highlighted'], false], 8, 6],
-      ),
+      'circle-radius': linear(16, ifHighlighted(2, 1), 21, ifHighlighted(8, 6)),
       'circle-stroke-color': '#ffffff',
       // routes drawn on the currently highlighted photo keep their difficulty
       // colour and same-sized centre, but get a bigger white ring around them.
       // zoom must stay top-level, so the highlighted `case` goes in the outputs
       'circle-stroke-width': linear(
         16,
-        ['case', ['boolean', ['feature-state', 'highlighted'], false], 2, 0.4],
+        ifHighlighted(2, 0.4),
         21,
-        ['case', ['boolean', ['feature-state', 'highlighted'], false], 5, 1.2],
+        ifHighlighted(5, 1.2),
       ),
     },
   },
