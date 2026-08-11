@@ -2,6 +2,12 @@ import { getGradeIndexFromTags } from '../../../../../services/tagging/climbing/
 import { Feature, FeatureTags } from '../../../../../services/types';
 import { useFeatureContext } from '../../../../utils/FeatureContext';
 import { useUserSettingsContext } from '../../../../utils/userSettings/UserSettingsContext';
+import { hasWikimediaCommons } from '../../utils/photo';
+import { getClimbingAttributes } from '../../../../../services/tagging/climbing/climbingAttributes';
+import {
+  lengthOverlapsFilter,
+  LengthMeters,
+} from '../../../../../services/tagging/climbing/parseClimbingLength';
 
 export const useGetMemberCrags = () => {
   const { feature } = useFeatureContext();
@@ -19,6 +25,12 @@ const someFeatureTags = (
   predicate(crag.tags) ||
   crag.memberFeatures.some(({ tags }) => predicate(tags));
 
+// Same signal as map marker colour (hasImages): any wikimedia_commons* tag
+// on the crag or its routes.
+const hasPhoto = (crag: Feature) =>
+  hasWikimediaCommons(crag.tags) ||
+  (crag.memberFeatures ?? []).some((route) => hasWikimediaCommons(route.tags));
+
 export const useGetFilteredCrags = (crags: Feature[]): Feature[] => {
   const { climbingFilter } = useUserSettingsContext();
   const {
@@ -31,8 +43,12 @@ export const useGetFilteredCrags = (crags: Feature[]): Feature[] => {
     inclinations,
     materials,
     familyFriendly,
+    photoDrawn,
+    lengthInterval,
+    isLengthIntervalDefault,
   } = climbingFilter;
   const [minIndex, maxIndex] = gradeInterval;
+  const [lengthMin, lengthMax] = lengthInterval;
 
   if (isDefaultFilter) {
     return crags;
@@ -71,12 +87,42 @@ export const useGetFilteredCrags = (crags: Feature[]): Feature[] => {
     !familyFriendly ||
     someFeatureTags(crag, (tags) => isTagSet(tags['climbing:family_friendly']));
 
+  const matchesPhoto = (crag: Feature) => {
+    if (photoDrawn === 'any') return true;
+    const withPhoto = hasPhoto(crag);
+    return photoDrawn === 'with' ? withPhoto : !withPhoto;
+  };
+
+  const matchesLength = (crag: Feature) => {
+    if (isLengthIntervalDefault) return true;
+
+    const lengths: LengthMeters[] = [];
+    const walk = (feature: Feature) => {
+      const attrs = getClimbingAttributes(feature.tags);
+      if (attrs.lengthMin != null && attrs.lengthMax != null) {
+        lengths.push({ min: attrs.lengthMin, max: attrs.lengthMax });
+      }
+      feature.memberFeatures?.forEach(walk);
+    };
+    walk(crag);
+
+    // No climbing:length on the crag or its routes — hide while length filter
+    // is active (same as map sectors/areas without length data).
+    if (lengths.length === 0) return false;
+
+    return lengths.some((length) =>
+      lengthOverlapsFilter(length, lengthMin, lengthMax),
+    );
+  };
+
   return crags.filter(
     (crag) =>
       matchesGrade(crag) &&
       matchesClimbingTypes(crag) &&
       matchesInclinations(crag) &&
       matchesMaterials(crag) &&
-      matchesFamilyFriendly(crag),
+      matchesFamilyFriendly(crag) &&
+      matchesPhoto(crag) &&
+      matchesLength(crag),
   );
 };

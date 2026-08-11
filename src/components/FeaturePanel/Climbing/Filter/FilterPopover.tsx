@@ -119,6 +119,8 @@ export const FilterPopover = ({
             showInclination={showRockFilters}
             showMaterial={showRockFilters}
             showFamilyFriendly={showFamilyFriendly}
+            showPhotoDrawn={showRockFilters}
+            showLength={showRockFilters}
           />
         )}
         <ZoomWarning />

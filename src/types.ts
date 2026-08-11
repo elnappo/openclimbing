@@ -28,6 +28,7 @@ export type ClimbingTilesProperties = {
 
   // group only:
   routeCount?: number;
+  routesWithPhoto?: number; // drawn topo lines; routes use 0/1
   hasImages?: boolean;
   histogramCode?: string;
 
@@ -41,6 +42,8 @@ export type ClimbingTilesProperties = {
   climbingTypes?: string[];
   inclinations?: string[];
   familyFriendly?: boolean;
+  lengthMin?: number; // metres
+  lengthMax?: number;
 };
 
 // Relation ancestor of a search result (climbing area / site), nearest first.

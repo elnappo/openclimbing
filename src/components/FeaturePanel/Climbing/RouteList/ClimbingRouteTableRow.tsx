@@ -42,6 +42,9 @@ import {
   getWikimediaCommonsPhotoPathKeys,
   isRouteDrawnOnPhoto,
 } from '../utils/photo';
+import { formatClimbingLength } from '../utils/formatClimbingLength';
+import { getClimbingAttributes } from '../../../../services/tagging/climbing/climbingAttributes';
+import { lengthOverlapsFilter } from '../../../../services/tagging/climbing/parseClimbingLength';
 import { usePhotoHighlightContext } from '../contexts/PhotoHighlightContext';
 
 const Container = styled.div`
@@ -65,7 +68,7 @@ const RouteNameContainer = styled.div`
   display: flex;
   gap: 8px;
   position: relative;
-  align-items: center;
+  align-items: baseline;
   user-select: text;
   -webkit-user-select: text;
 `;
@@ -78,6 +81,13 @@ const RouteDescriptionContainer = styled.div`
 `;
 
 const RouteAuthorContainer = styled(RouteDescriptionContainer)``;
+
+const RouteLengthContainer = styled.span`
+  color: ${({ theme }) => theme.palette.text.secondary};
+  font-size: 0.85em;
+  line-height: inherit;
+  white-space: nowrap;
+`;
 
 const RouteGradeContainer = styled.div`
   // When the name column is hidden the grade sits next to the route number
@@ -290,24 +300,12 @@ const RouteDescription = ({ feature }: { feature: Feature }) =>
 
 const RouteAuthor = ({ feature }: { feature: Feature }) =>
   feature.tags?.author ? (
-    <RouteAuthorContainer>{feature.tags?.author}</RouteAuthorContainer>
+    <RouteAuthorContainer>{feature.tags.author}</RouteAuthorContainer>
   ) : null;
 
-const RouteLengthContainer = styled.span`
-  color: ${({ theme }) => theme.palette.text.secondary};
-  font-size: 11px;
-  white-space: nowrap;
-`;
-
 const RouteLength = ({ feature }: { feature: Feature }) => {
-  const length = feature.tags?.['climbing:length']?.trim();
-  if (!length) {
-    return null;
-  }
-
-  // a bare number means metres in OSM, anything else already carries its unit
-  const label = /^\d+([.,]\d+)?$/.test(length) ? `${length} m` : length;
-  return <RouteLengthContainer>{label}</RouteLengthContainer>;
+  const label = formatClimbingLength(feature.tags?.['climbing:length']);
+  return label ? <RouteLengthContainer>{label}</RouteLengthContainer> : null;
 };
 
 const RouteName = (props: {
@@ -321,6 +319,7 @@ const RouteName = (props: {
         variant="inherit"
         component="h3"
         fontWeight={props.highlighted ? 700 : undefined}
+        lineHeight={1.3}
       >
         {props.feature.tags?.name}
       </Typography>
@@ -367,7 +366,8 @@ export const ClimbingRouteTableRow = forwardRef<HTMLDivElement, Props>(
     const { climbingFilter } = useUserSettingsContext();
     const { highlightedPhoto } = usePhotoHighlightContext();
     const theme = useTheme();
-    const { gradeInterval } = climbingFilter;
+    const { gradeInterval, lengthInterval, isLengthIntervalDefault } =
+      climbingFilter;
     const [minIndex, maxIndex] = gradeInterval;
     if (!feature) {
       return null;
@@ -387,8 +387,18 @@ export const ClimbingRouteTableRow = forwardRef<HTMLDivElement, Props>(
     const shortId = getShortId(feature.osmMeta);
     const hasTick = isTicked(shortId);
     const gradeIndex = getGradeIndexFromTags(feature.tags);
-    const isVisible =
+    const matchesGrade =
       !gradeIndex || (gradeIndex >= minIndex && gradeIndex <= maxIndex);
+    const routeAttrs = getClimbingAttributes(feature.tags);
+    const routeLength =
+      routeAttrs.lengthMin != null && routeAttrs.lengthMax != null
+        ? { min: routeAttrs.lengthMin, max: routeAttrs.lengthMax }
+        : null;
+    const matchesLength =
+      isLengthIntervalDefault ||
+      !routeLength ||
+      lengthOverlapsFilter(routeLength, lengthInterval[0], lengthInterval[1]);
+    const isVisible = matchesGrade && matchesLength;
 
     return (
       <>
