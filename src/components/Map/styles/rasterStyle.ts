@@ -4,6 +4,9 @@ import { overpassLayers } from './layers/overpassLayers';
 import { osmappLayers } from '../../LayerSwitcher/osmappLayers';
 import { Theme } from '../../../helpers/theme';
 
+const toCorsProxyUrl = (url: string) =>
+  `/api/cors-proxy?url=${encodeURIComponent(url).replace(/%7B/g, '{').replace(/%7D/g, '}')}`;
+
 const getSource = (url) => {
   if (url.match('{bingSubdomains}')) {
     return {
@@ -24,7 +27,11 @@ const getSource = (url) => {
   };
 };
 
-const rasterStyle = (id: string, url: string): StyleSpecification => {
+const rasterStyle = (
+  id: string,
+  url: string,
+  maxzoom?: number,
+): StyleSpecification => {
   const source = getSource(url);
   return {
     version: 8,
@@ -48,6 +55,7 @@ const rasterStyle = (id: string, url: string): StyleSpecification => {
       [id]: {
         type: 'raster' as const,
         tileSize: 256,
+        ...(maxzoom ? { maxzoom } : {}),
         ...source,
       },
     },
@@ -67,5 +75,9 @@ export const getRasterStyle = (
       : layer.url
     : key; // if `key` not found, it contains custom tiles URL
 
-  return rasterStyle(key, layerUrl);
+  return rasterStyle(
+    key,
+    layer?.corsProxy ? toCorsProxyUrl(layerUrl) : layerUrl,
+    layer?.maxzoom,
+  );
 };
