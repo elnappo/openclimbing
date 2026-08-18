@@ -225,7 +225,7 @@ export default {
   'climbing.guideinfo.description':
     'openclimbing.org to otwarta platforma przewodników i map wspinaczkowych. Topo i zdjęcia są przechowywane w projektach OpenStreetMap i Wikipedia, więc każdy może je edytować.',
   'climbing.guideinfo.button': 'Więcej informacji',
-  'project.openclimbing.description': 'Darmowa wiki mapa wspinaczkowa',
+  'project.openclimbing.description': 'Otwarty przewodnik wspinaczkowy',
   'project.openclimbing.serpDescription':
     'Oparta na wiki mapa wspinaczkowa o otwartym kodzie z topo. Zbudowana na projektach OpenStreetMap i Wikipedia.',
   'project.openclimbing.climbing_guide': 'Przewodnik wspinaczkowy i topo',
@@ -705,6 +705,7 @@ export default {
   'crag_sort.option_photos': 'Liczba zdjęć',
   'crag_sort.option_routes': 'Liczba dróg',
   'crag_sort.option_alphabetical': 'Alfabetycznie',
+  'crag_sort.option_added': 'Data dodania',
   'crag_filter.title': 'Filtr',
   'crag_filter.grade': 'Z trudnością',
   'crag_filter.grade_from': 'od',

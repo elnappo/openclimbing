@@ -97,10 +97,12 @@ const globalStyle = (theme: Theme) => css`
   .maplibregl-ctrl-group {
     background-color: ${convertHexToRgba(
       theme.palette.background.paper,
-      0.7,
+      0.8,
     )} !important;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-radius: 12px !important;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
     max-height: calc(
       100vh - 300px
     ); // = top right controls + right bottom + safety margin (TEST also in landscape)
@@ -111,41 +113,126 @@ const globalStyle = (theme: Theme) => css`
       filter: ${theme.palette.invertFilter};
     }
 
-    @media ${isMobileMode} {
-      border-radius: 22px !important;
-
-      button {
-        width: 44px !important;
-        height: 44px !important;
-
-        // indoor level control has multiple buttions
-        &:first-of-type {
-          border-radius: 22px 22px 0 0 !important;
-        }
-        &:last-of-type {
-          border-radius: 0 0 22px 22px !important;
-        }
-      }
-    }
     button + button {
       border-top: 1px solid ${theme.palette.divider} !important;
+    }
+  }
+
+  /* Navigation (+ / − / compass): one glass button group */
+  .maplibregl-ctrl-group:has(> .maplibregl-ctrl-zoom-in) {
+    overflow: hidden;
+    border-radius: 16px !important;
+    display: flex;
+    flex-direction: column;
+
+    button {
+      width: 40px !important;
+      height: 40px !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+
+      &:focus:first-child,
+      &:focus:last-child,
+      &:focus:only-child {
+        border-radius: 0 !important;
+      }
+
+      &:focus:not(:focus-visible) {
+        box-shadow: none;
+      }
+
+      &:focus:focus-visible {
+        box-shadow: inset 0 0 0 2px ${theme.palette.primary.main};
+      }
+    }
+  }
+
+  /* Geolocate + compass-only: circular glass like MapControlButton */
+  .maplibregl-ctrl-group:has(> .maplibregl-ctrl-geolocate),
+  .maplibregl-ctrl-group:has(> .maplibregl-ctrl-compass):not(
+      :has(> .maplibregl-ctrl-zoom-in)
+    ) {
+    background: transparent !important;
+    box-shadow: none !important;
+    overflow: visible;
+
+    button + button {
+      border-top: 0 !important;
+    }
+
+    button {
+      width: 40px !important;
+      height: 40px !important;
+      border-radius: 50% !important;
+      background-color: ${convertHexToRgba(
+        theme.palette.background.paper,
+        0.8,
+      )} !important;
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+
+      &:focus:first-child,
+      &:focus:last-child,
+      &:focus:only-child {
+        border-radius: 50% !important;
+      }
+
+      &:focus:not(:focus-visible) {
+        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+      }
+
+      &:focus:focus-visible {
+        box-shadow:
+          0 0 0 2px rgba(0, 0, 0, 0.1),
+          0 0 0 4px ${theme.palette.primary.main};
+      }
+    }
+  }
+
+  @media (hover: hover) {
+    .maplibregl-ctrl-group:has(> .maplibregl-ctrl-zoom-in)
+      button:not(:disabled):hover {
+      background-color: ${convertHexToRgba(
+        theme.palette.background.paper,
+        1,
+      )} !important;
+    }
+
+    .maplibregl-ctrl-group:has(> .maplibregl-ctrl-geolocate)
+      button:not(:disabled):hover,
+    .maplibregl-ctrl-group:has(> .maplibregl-ctrl-compass):not(
+        :has(> .maplibregl-ctrl-zoom-in)
+      )
+      button:not(:disabled):hover {
+      background-color: ${theme.palette.background.paper} !important;
     }
   }
 
   /* Push the native map controls below the global TopBar (68px) */
   .maplibregl-ctrl-top-right {
     top: 76px !important;
+    right: 6px !important;
+  }
+  .maplibregl-ctrl-top-right .maplibregl-ctrl {
+    margin: 0 0 8px 0 !important;
   }
 
-  /* Mobile: 6px from the right; 8px under the top-bar icons
+  /* Mobile: 8px under the top-bar icons
      (icon top 6 + 44px height → bottom 50 → 50 + 8 = 58). */
   @media ${isMobileMode} {
     .maplibregl-ctrl-top-right {
       top: 58px !important;
-      right: 6px !important;
     }
-    .maplibregl-ctrl-top-right .maplibregl-ctrl {
-      margin: 0 0 8px 0 !important;
+    .maplibregl-ctrl-group:has(> .maplibregl-ctrl-zoom-in) button,
+    .maplibregl-ctrl-group:has(> .maplibregl-ctrl-geolocate) button,
+    .maplibregl-ctrl-group:has(> .maplibregl-ctrl-compass):not(
+        :has(> .maplibregl-ctrl-zoom-in)
+      )
+      button {
+      width: 44px !important;
+      height: 44px !important;
     }
   }
 

@@ -275,7 +275,7 @@ export default {
   'homepage.gallery.routes_count': `__count__ cest`,
   'homepage.gallery.drawn_on_photo': `__count__ zakresleno na této fotce`,
   'homepage.gallery.nothing_in_viewport': `V aktuálním výřezu mapy nejsou zakreslené oblasti – zobrazujeme nejzakreslenější.`,
-  'homepage.gallery.show_area': `Zobrazit`,
+  'homepage.gallery.show_area': `Zobrazit oblast`,
 
   'homepage.about_banner_desc': `Žádné reklamy. Žádný paywall. Lezecký průvodce, který patří všem.`,
   'homepage.about_banner_cta': `Zjistit víc`,
@@ -350,10 +350,10 @@ export default {
   'about.open_heading': 'Kde data žijí',
   'about.open_lead': 'Cesty v OpenStreetMap. Fotky na Wikimedia Commons. Upravit je můžeš tady – i v jakékoli jiné aplikaci, navždy.',
   'about.open_osm_desc': 'Wikipedie map. Každá skála, kterou zakreslíš, je veřejná – ne zamčená v OpenClimbing.',
-  'about.open_osm_cta': 'Otevřít OpenStreetMap',
+  'about.open_osm_cta': 'Co je OpenStreetMap',
   'about.open_osm_spec': 'Jak kreslíme topo',
   'about.open_commons_desc': 'Lezecké fotky zůstávají ve veřejném archivu, který patří všem.',
-  'about.open_commons_cta': 'Otevřít Commons',
+  'about.open_commons_cta': 'Co je Wikimedia Commons',
   'about.open_github_desc': 'Aplikace je open source. Kdokoli si ji může přečíst, forknout nebo poslat pull request.',
   'about.open_github_cta': 'Zobrazit na GitHubu',
 
@@ -452,6 +452,8 @@ export default {
   'featurepanel.gallery_scroll_right': 'Posunout doprava',
   'featurepanel.photo_show_topo': 'Zobrazit topo',
   'featurepanel.photo_enlarge': 'Zvětšit',
+  'featurepanel.photo_alt': 'Fotka __type__ __name__',
+  'featurepanel.photo_alt_named': 'Fotka __type__ __name__ (__photo__)',
   'featurepanel.grade_range': 'Obtížnost',
   'climbing_orientation.label': 'Orientace',
   'climbing_orientation.n': 'sever',
@@ -519,6 +521,9 @@ export default {
   'editdialog.login_required_message':
     'Pro uložení změn se musíš přihlásit do OpenStreetMap. Stačí jednou — pak budou tvoje úpravy chodit rovnou do mapy.',
   'editdialog.login_required': 'Pro uložení změn je nutné přihlášení.',
+  'editdialog.login_banner_title': 'Nejsi přihlášený',
+  'editdialog.login_banner_body': 'Můžeš upravovat hned a přihlásit se až před uložením. Účet na OpenStreetMap je zdarma a registrace trvá chvilku.',
+  'editdialog.login_banner_dismiss': 'Skrýt',
   'editdialog.add_major_tag': 'Přidat',
   'editdialog.upload_photo': 'Nahrát fotku',
   'editdialog.upload_photo_tooltip':
@@ -819,6 +824,7 @@ export default {
   'climbingareas.sort_routes': 'Počtu cest',
   'climbingareas.sort_sectors': 'Počtu sektorů',
   'climbingareas.sort_alphabetical': 'Abecedně',
+  'climbingareas.sort_added': 'Data přidání',
   'climbingareas.col_name': 'Název',
   'climbingareas.col_routes': 'Cest',
   'climbingareas.col_sectors': 'Sektorů',
@@ -844,6 +850,7 @@ export default {
   'crag_sort.option_photos': 'Podle počtu fotek',
   'crag_sort.option_routes': 'Podle počtu cest',
   'crag_sort.option_alphabetical': 'Podle abecedy',
+  'crag_sort.option_added': 'Podle data přidání',
 
   'crag_filter.title': 'Filtrovat',
   'crag_filter.grade': 'V obtížnosti',

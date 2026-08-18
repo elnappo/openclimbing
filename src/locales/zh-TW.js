@@ -81,7 +81,7 @@ export default {
     'openclimbing.org 是一個開放的攀岩指南與地圖平台。岩壁圖和照片都儲存在 OpenStreetMap 和維基百科專案中，所以任何人都可以編輯。',
   'climbing.guideinfo.button': '更多資訊',
 
-  'project.openclimbing.description': '免費的維基攀岩地圖',
+  'project.openclimbing.description': '開放攀岩指南',
   'project.openclimbing.serpDescription': '一個附有岩壁圖、以維基為基礎的開源攀岩地圖。建立於 OpenStreetMap 和維基百科專案之上。',
   'project.openclimbing.climbing_guide': '攀岩指南與岩壁圖',
 
@@ -437,6 +437,7 @@ export default {
   'crag_sort.option_photos': '照片數量',
   'crag_sort.option_routes': '路線數量',
   'crag_sort.option_alphabetical': '按字母順序',
+  'crag_sort.option_added': '加入日期',
 
   'crag_filter.title': '篩選',
   'crag_filter.grade': '依難度',

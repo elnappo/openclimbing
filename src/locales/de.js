@@ -226,7 +226,7 @@ export default {
   'climbing.guideinfo.description':
     'openclimbing.org ist eine offene Plattform für Kletterführer und Karten. Topos und Fotos werden in den Projekten OpenStreetMap und Wikipedia gespeichert, sodass sie von allen bearbeitet werden können.',
   'climbing.guideinfo.button': 'Mehr Infos',
-  'project.openclimbing.description': 'Kostenlose Wiki-Kletterkarte',
+  'project.openclimbing.description': 'Offener Kletterführer',
   'project.openclimbing.serpDescription':
     'Eine wiki-basierte Open-Source-Kletterkarte mit Topos. Basierend auf den OpenStreetMap- und Wikipedia-Projekten.',
   'project.openclimbing.climbing_guide': 'Kletterführer & Topos',
@@ -711,6 +711,7 @@ export default {
   'crag_sort.option_photos': 'Anzahl der Fotos',
   'crag_sort.option_routes': 'Anzahl der Routen',
   'crag_sort.option_alphabetical': 'Alphabetisch',
+  'crag_sort.option_added': 'Hinzugefügt am',
   'crag_filter.title': 'Filter',
   'crag_filter.grade': 'Mit Grad',
   'crag_filter.grade_from': 'von',
