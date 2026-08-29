@@ -1,12 +1,14 @@
 import styled from '@emotion/styled';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import CheckIcon from '@mui/icons-material/Check';
-import { Box, Stack, Typography } from '@mui/material';
+import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
+import { Box, Button, Stack, Typography } from '@mui/material';
 import Router from 'next/router';
 import React from 'react';
 import { intl, t } from '../../services/intl';
 import { TranslationId } from '../../services/types';
-import { useMobileMode } from '../helpers';
+import { COMMUNITY_URL } from '../consts';
+import { isMobileMode, useMobileMode } from '../helpers';
 import { ClosePanelButton } from '../utils/ClosePanelButton';
 import { MobilePageDrawer } from '../utils/MobilePageDrawer';
 import { GradientHeading, TintedCard } from '../utils/panelUi';
@@ -52,6 +54,15 @@ const StoryLink = styled.a`
   }
 `;
 
+const MobileOnly = styled.div`
+  display: none;
+
+  @media ${isMobileMode} {
+    display: block;
+    text-align: center;
+  }
+`;
+
 const Hero = () => (
   <Box
     sx={{
@@ -77,6 +88,26 @@ const Hero = () => (
       {t('homepage.our_story')}
       <ArrowForwardIcon sx={{ fontSize: 16 }} />
     </StoryLink>
+    <MobileOnly>
+      <Button
+        variant="outlined"
+        color="secondary"
+        size="small"
+        startIcon={<QuestionAnswerIcon />}
+        href={COMMUNITY_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        sx={{
+          mt: 2.5,
+          borderRadius: '999px',
+          textTransform: 'none',
+          fontWeight: 800,
+          px: 2,
+        }}
+      >
+        {t('climbing.forum')}
+      </Button>
+    </MobileOnly>
   </Box>
 );
 
