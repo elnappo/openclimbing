@@ -73,8 +73,8 @@ const getNewRecords = (data: OsmResponse, log: (message: string) => void) => {
     }
 
     // omit playground=climbingwall with sport=climbing
-    else if (!node.tags.playground) {
-      return;
+    else if (node.tags.playground) {
+      continue;
     }
 
     //
@@ -117,8 +117,8 @@ const getNewRecords = (data: OsmResponse, log: (message: string) => void) => {
     }
 
     // omit playground=climbingwall with sport=climbing
-    else if (!way.tags.playground) {
-      return;
+    else if (way.tags.playground) {
+      continue;
     }
 
     //
@@ -155,8 +155,8 @@ const getNewRecords = (data: OsmResponse, log: (message: string) => void) => {
     }
 
     // omit playground=climbingwall with sport=climbing
-    else if (!relation.tags.playground) {
-      return;
+    else if (relation.tags.playground) {
+      continue;
     }
 
     //
