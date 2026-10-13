@@ -40,7 +40,6 @@ export const GradeSelect = ({ k, climbingGradeSystem }: GradeSelectProps) => {
       label={getGradeSystemName(climbingGradeSystem)}
       value={currentValue || null}
       onChange={onChange}
-      freeSolo
       placeholder={isMixed ? t('editdialog.multiple_values') : undefined}
       renderOption={(props, option) => (
         <Box component="li" {...props}>
